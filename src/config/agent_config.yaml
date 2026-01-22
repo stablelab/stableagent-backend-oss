@@ -1,0 +1,177 @@
+# Embedding Agent Configuration
+
+# LLM Configuration
+llm:
+  # Global settings (applied to all providers unless overridden)
+  temperature: 0.2
+  max_tokens: 2000
+  
+  # Provider-specific configurations
+  providers:
+    gemini:
+      model_name: "gemini-1.5-pro"  # Can be overridden by VERTEX_DEFAULT_MODEL env var
+      temperature: 0.2
+      safety_settings:
+        0: 0  # HARM_CATEGORY_HARASSMENT
+        1: 0  # HARM_CATEGORY_HATE_SPEECH
+        2: 0  # HARM_CATEGORY_SEXUALLY_EXPLICIT
+        3: 0  # HARM_CATEGORY_DANGEROUS_CONTENT
+      convert_system_message_to_human: true
+      max_tokens: 2000
+    
+    openai:
+      model_name: "gpt-4"  # Can be overridden by OPENAI_MODEL_NAME env var
+      temperature: 0.2
+      max_tokens: 2000
+      top_p: 0.9
+      frequency_penalty: 0.0
+      presence_penalty: 0.0
+    
+
+
+# Similarity Search Configuration
+similarity:
+  default_limit: 5
+  threshold: 0.1  # Minimum similarity score to consider relevant
+  max_content_preview: 200  # Maximum characters for content preview
+
+# Analysis Configuration
+analysis:
+  max_reasoning_length: 50  # Maximum words for reasoning text submitted by delegate on vote
+  max_similar_items: 3  # Maximum similar items to show in analysis
+
+# Content Formatting
+formatting:
+  proposal_templates:
+    snapshot: |
+      Proposal Source: Snapshot
+      Proposal ID: {proposal_id}
+      Title: {title}
+      Content: {body}
+      Author: {author}
+      State: {state}
+      Created: {created}
+      DAO: {dao_id}
+      Network: {network}
+      Choices: {choices}
+      Votes: {votes}
+    
+    tally: |
+      Proposal Source: Tally
+      Proposal ID: {id}
+      Title: {title}
+      Description: {description}
+      Status: {status}
+      Start: {start_timestamp}
+      End: {end_timestamp}
+      Governor: {governor_address}
+      Chain ID: {chain_id}
+      For Votes: {for_votes_count}
+      Against Votes: {against_votes_count}
+      Abstain Votes: {abstain_votes_count}
+
+  similar_content_templates:
+    proposals: "Similar Historical Proposals:\n{content}"
+    discussions: "Related Community Discussions:\n{content}"
+
+  content_item_templates:
+    proposal: "{index}. {title} ({source})\n   Content: {content_preview}...\n   Similarity: {similarity:.2f}\n\n"
+    discussion: "{index}. {content_preview}...\n   Similarity: {similarity:.2f}\n\n"
+
+# System Prompt Template
+system_prompt: |
+  You are an expert governance analyst. Please analyze the following governance proposal and provide comprehensive insights.
+
+  {proposal_text}
+
+  {context_text}
+
+  Please provide a detailed analysis including:
+
+  1. **Proposal Summary**: Brief overview of what the proposal aims to achieve
+  2. **Key Points**: Main objectives and important details
+  3. **Historical Context**: How this proposal relates to similar historical proposals
+  4. **Community Sentiment**: Analysis based on related discussions and voting patterns
+  5. **Risk Assessment**: Potential risks and concerns
+  6. **Recommendation**: Whether this proposal should be supported and why
+
+  At the end of your analysis, output TWO lines in this exact format:
+  REASONING: <concise justification in {max_reasoning_length} words or less explaining why this option was chosen>
+  FINAL DECISION RECOMMENDATION: <one of the following options: {voting_options_text}>
+
+  Choose the most appropriate option from the available choices above. For Tally here is the voting options guide.
+
+  Voting Options Guide:
+  {voting_options_text}
+
+  - Choose the FOR option if you recommend supporting/approving the proposal
+  - Choose the AGAINST option if you recommend rejecting/opposing the proposal  
+  - Choose the ABSTAIN option if you are uncertain or recommend abstaining
+
+  For Snapshot proposals, the LLM should choose from the following options for the FINAL DECISION RECOMMENDATION: {voting_options_text}. The LLM must find the most appropriate option based on its analysis.
+
+  The REASONING should be a brief, clear explanation of the key factors that led to this decision. Keep it under {max_reasoning_length} words."
+
+  Be thorough but concise in your analysis. Do NOT output any other decision lines, only the REASONING and FINAL DECISION RECOMMENDATION at the end.
+
+# Keyword Extraction Configuration
+keywords:
+  governance:
+    - governance
+    - proposal
+    - vote
+    - dao
+    - defi
+    - token
+    - staking
+    - liquidity
+    - yield
+    - protocol
+    - smart contract
+    - audit
+    - security
+    - risk
+    - revenue
+    - tvl
+    - market
+    - price
+    - adoption
+    - community
+    - development
+    - upgrade
+    - deployment
+    - integration
+    - partnership
+    - funding
+    - grant
+    - allocation
+
+  technical:
+    - aave
+    - tron
+    - arbitrum
+    - ethereum
+    - polygon
+    - optimism
+    - avalanche
+    - uniswap
+    - compound
+    - maker
+    - curve
+    - balancer
+    - synthetix
+
+# Fallback Configuration
+fallback:
+  similarity_scores:
+    proposals: 0.5
+    discussions: 0.3
+  max_keywords: 10
+
+# Two-stage Analysis Configuration
+two_stage:
+  enabled: false  # Controlled by TWO_STAGE_ANALYSE environment variable
+  cache_ttl_hours: 3
+  fallback_to_legacy: true
+  user_overlay_model: null  # Use same model as reasoning agent by default
+  max_retries: 1 

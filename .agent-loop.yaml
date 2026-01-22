@@ -1,0 +1,56 @@
+# Agent Loop Configuration for growth_chat
+# This file configures the /agent-loop slash command for this project
+
+# Test runner configuration
+test_runner:
+  command: "python"
+  args:
+    - "-m"
+    - "testing.run_tests"
+    - "--output-format"
+    - "json"
+  timeout: 900
+  env:
+    PYTHONPATH: "."
+    LOG_TOOL_DATAFRAMES: "true"
+
+# Results configuration
+results:
+  path: "testing/results/"
+  format: "json"
+  
+  # Extraction patterns for the flash test format
+  failure_pattern: ".details[].steps[] | select(.scores.must_score < 100 or .error != null)"
+  test_id_field: ".case_id"
+  error_field: ".error"
+  reasoning_field: ".scores.reasoning"
+  
+  # Growth chat specific - routing validation
+  routing_failure_pattern: ".details[].steps[] | select(.routing.correct == false)"
+
+# Source code locations (for searching when fixing)
+source_paths:
+  - "src/growth_chat/"
+  - "src/growth_chat/knowledge_base_agent/"
+  - "src/growth_chat/app_automation_agent/"
+  - "src/growth_chat/research_agent/"
+  - "src/growth_chat/onboarding_agent/"
+  - "src/utils/"
+
+# Test file locations
+test_paths:
+  - "testing/test_cases/"
+  - "testing/"
+
+# Additional shell commands allowed with --shell-read
+shell_read_whitelist:
+  - "python -c 'from src.growth_chat import *; print(dir())'"
+  - "python -c 'import sys; print(sys.path)'"
+  - "psql -c 'SELECT COUNT(*) FROM knowledge_items'"
+
+# Autonomous mode settings
+autonomous:
+  max_iterations: 5
+  stop_on_same_error: 3
+  allow_test_modifications: true
+
